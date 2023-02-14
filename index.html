@@ -1,0 +1,431 @@
+<html>
+    <head>
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous">
+      <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-Fy6S3B9q64WdZWQUiU+q4/2Lc9npb8tCaSX9FK7E8HnRr0Jz8D6OP9dO5Vg3Q9ct" crossorigin="anonymous"></script>
+    </head>
+    <style>
+      ul{
+        list-style-type: none;
+      }
+      .questions{
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+      .row{
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+      }
+      .form-input{
+        margin: 2% 3%;
+        border-color: green;
+      }
+      .submit-btn{
+        padding: 1% 5%;
+        margin-bottom: 2%;
+      }
+      .input-block{
+        display: flex;
+        height: 100%;
+        align-items: center;
+        justify-content: center;
+        border-radius: 0.5rem;
+      }
+      .green-underline{
+        text-decoration: underline green 5px;
+      }
+      .grey-underline{
+        text-decoration: underline grey 5px;
+      }
+      .red-underline{
+        text-decoration: underline red 5px;
+      }
+      .full-centered{
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+    </style>
+    <body>
+      <div class="modal fade" id="exampleModalCenteredScrollable" tabindex="-1" aria-labelledby="exampleModalCenteredScrollableTitle" style="display: none;" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="exampleModalCenteredScrollableTitle">SONUÇ</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">×</span>
+              </button>
+            </div>
+            <div id="modal-insert-bloque" class="modal-body">
+            </div>
+            <div class="modal-footer">
+              <button id="syncCheck" data-dismiss="modal" class="btn btn-success p-2">Kaydet</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+        <h1 class="sorular-title" style="text-align: center;">SORULAR</h1>
+        <button style="width: 0px !important; opacity: 0;" id="modal-btn" type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModalCenteredScrollable"></button>
+        <div class="row questions">
+          <button onclick="submit()" class="btn btn-outline-success submit-btn ml-5">Kaydet</button>
+          <ul id="sorular" class="col-md-12 row"></ul>
+          <button onclick="submit()" class="btn btn-outline-success submit-btn ml-5">Kaydet</button>
+        </div>
+        <script>
+          
+          let soruArr = [];
+          let bolumler = [];
+          let katsayilar = [];
+
+          const puanlar = new Array(32);
+          for (let i = 0; i < 32; i++) {
+            puanlar[i] = 0;
+          }
+          console.log(puanlar);
+
+        function getKatsayilar(){
+
+            var katsayi;
+            var soruno;
+            var bolumid;
+            var index;
+
+            const xhr = new XMLHttpRequest();
+            xhr.open("GET", "http://127.0.0.1:8000/api/katsayilar/");
+            xhr.send();
+            xhr.onreadystatechange = function () {
+              if (this.readyState === 4) {
+                if ((this.status == 200) && (this.status < 300)) {
+                  obj = JSON.parse(this.responseText);
+
+                  obj.forEach(element => {
+                    bolumid = element.bolumid;
+                    soruno=element.soruid;
+                    katsayi=element.katsayi;
+                    //console.log("bolumid: "+bolumid+"soruno: "+soruno+"katsayi: "+katsayi+ "soru cevap: "+ soruArr[soruno-1]);
+                    puanlar[bolumid-1] += soruArr[soruno-1].value*katsayi;
+                    console.log(puanlar);
+                  });
+                  
+                  var title = document.createElement("h5");
+                  var p1 = document.createElement("p");
+                  var p2 = document.createElement("p");
+                  var p3 = document.createElement("p");
+                  
+                  var max1;
+                  var max2;
+                  var max3;
+                  
+                  var max1Value = 0;
+                  var max2Value = 0;
+                  var max3Value = 0;
+
+                  title.textContent = "Beğendiğinizi Seçiniz";
+
+                  for (let i = 0; i < 32; i++) {
+                    if(puanlar[i]>=max1Value){
+                      max1 = i;
+                      max1Value = puanlar[i];
+                    }
+                  }
+                  p1.innerHTML = "%"+puanlar[max1]+" eşleşme "+bolumler[max1].bolumad+" <input type='checkbox' id="+ max1 +" name='syncCheck'>";
+                  
+                  for (let i = 0; i < 32; i++) {
+                    if(puanlar[i]>max2Value && i != max1){
+                      max2 = i;
+                      max2Value = puanlar[i];
+                    }
+                  }
+                  p2.innerHTML = "%"+puanlar[max2]+" eşleşme "+bolumler[max2].bolumad+" <input type='checkbox' id="+ max2 +" name='syncCheck'>";
+
+                  for (let i = 0; i < 32; i++) {
+                    if(puanlar[i]>max3Value && i != max1 && i != max2)
+                      max3 =i;
+                      max3Value = puanlar[i];
+                  }
+                  
+                  p3.innerHTML = "%"+puanlar[max3]+" eşleşme "+bolumler[max3].bolumad+" <input type='checkbox' id="+ max3 +" name='syncCheck'>";
+                  
+                  var siralamalar = document.createElement("div");
+                  siralamalar.style.display = "flex";
+                  siralamalar.style.flexDirection = "column";
+                  siralamalar.innerHTML = `
+                  <input class="mt-2" type="number" name="say" placeholder="Sayısal Sıralamanızı Giriniz">
+                  <input class="mt-2" type="number" name="ea" placeholder="Eşit Ağırlık Sıralamanızı Giriniz">
+                  <input class="mt-2" type="number" name="soz" placeholder="Sözel Sıralamanızı Giriniz">
+                  ` 
+
+                  var insertBloque = document.getElementById("modal-insert-bloque");
+
+                  insertBloque.appendChild(title);
+                  insertBloque.appendChild(p1);
+                  insertBloque.appendChild(p2);
+                  insertBloque.appendChild(p3);
+                  insertBloque.appendChild(siralamalar);
+                  
+
+                  document.getElementById("modal-btn").click();
+                  console.table(bolumler);
+                }
+              }
+            }
+            
+          }
+
+          function getBasari(){
+            const xhr = new XMLHttpRequest();
+            xhr.open("GET", "http://127.0.0.1:8000/api/basarioran");
+            xhr.send();
+            xhr.onreadystatechange = function () {
+              if (this.readyState === 4) {
+                if ((this.status == 200) && (this.status < 300)) {
+                  obj1 = JSON.parse(this.responseText);
+                  console.log(obj1)
+                  alert("Başarı Oranı: % "+obj1[0].basarili/obj1[0].toplam * 100);
+                }
+              }
+            }
+          }
+
+          function getBolum(){
+            const xhr = new XMLHttpRequest();
+            xhr.open("GET", "http://127.0.0.1:8000/api/bolum/");
+            xhr.send();
+            xhr.onreadystatechange = function () {
+              if (this.readyState === 4) {
+                if ((this.status == 200) && (this.status < 300)) {
+                  obj = JSON.parse(this.responseText);
+                  console.log(obj)
+                  obj.forEach(element => {
+                    bolumler.push(element);
+                  });
+                  console.log(bolumler)
+                }
+              }
+            }
+          }
+
+          function getUniversite(bolumid, siralama){
+            const xhr = new XMLHttpRequest();
+            xhr.open("GET", "http://127.0.0.1:8000/api/universite/"+bolumid+"/"+siralama);
+            xhr.send();
+            xhr.onreadystatechange = function () {
+              if (this.readyState === 4) {
+                if ((this.status == 200) && (this.status < 300)) {
+                  obj = JSON.parse(this.responseText);
+                  console.log(obj)
+                  
+                  for (let index = 0; index < 10; index++) {
+                  var div = document.createElement('div');
+                  div.textContent = " "+obj[index].universitead+", "+obj[index].bolum+", "+ obj[index].siralama;
+                  document.body.appendChild(div);
+                    
+                  }
+                }
+              }
+            }
+          }
+          function updateBasari(successful){
+            const xhr = new XMLHttpRequest();
+            xhr.open("GET", "http://127.0.0.1:8000/api/basari/"+successful);
+            xhr.send();
+            xhr.onreadystatechange = function () {
+              if (this.readyState === 4) {
+                if ((this.status == 200) && (this.status < 300)) {
+                  console.log("successful update");
+                }
+              }
+            }
+          }
+          function getSorular(sectionNo){
+            const xhr = new XMLHttpRequest();
+            xhr.open("GET", "http://127.0.0.1:8000/api/sorular/"+sectionNo+"");
+            xhr.send();
+            xhr.onreadystatechange = function () {
+              if (this.readyState === 4) {
+                if ((this.status == 200) && (this.status < 300)) {
+                  obj = JSON.parse(this.responseText);
+
+
+                  var sorular = document.getElementById("sorular");
+                  if(sectionNo == 1){
+                    var title = document.createElement("div");
+                    title.classList.add("mt-3")
+                    title.style.display = "flex"
+                    title.innerHTML = "<h5>(1-30)Aşağıdaki Cümlelerin hangileri sizi anlatıyor?</h5>(<h5 class='red-underline'>Katılmıyorum</h5> / <h5 class='grey-underline'>Kısmen</h5> / <h5 class='green-underline'>Katılıyorum</h5>)";
+                    sorular.appendChild(title)
+                  }
+                  else if(sectionNo == 2){
+                    var title = document.createElement("div");
+                    title.style.display = "flex"
+                    title.innerHTML = "<h5>(31-50)Verilen sorulara sizin için en uygun şıkkı işaretleyiniz.</h5>(<h5 class='red-underline'>Katılmıyorum</h5> / <h5 class='grey-underline'>Kısmen</h5> / <h5 class='green-underline'>Katılıyorum</h5>)";
+                    sorular.appendChild(title)
+                  }
+                  else if(sectionNo == 3){
+                    var title = document.createElement("h5");
+                    title.style.display = "flex"
+                    title.innerHTML = "<h5>(51-68) Aşağıdaki seçeneklerin hangilerinden hoşlanırsınız?</h5>(<h5 class='red-underline'>Katılmıyorum</h5> / <h5 class='green-underline'>Katılıyorum</h5>)	";
+                    sorular.appendChild(title)
+                  }
+                  else if(sectionNo == 4){
+                    var title = document.createElement("h5");
+                    title.style.display = "flex"
+                    title.innerHTML = "<h5>Aşağıdaki derslerde başarı durumunuz nasıl? (0/1/2)</h5>((<h5 class='red-underline'>Katılmıyorum</h5> / <h5 class='grey-underline'>Kısmen</h5> / <h5 class='green-underline'>Katılıyorum</h5)";
+                    sorular.appendChild(title)
+                  }
+
+                  Object.keys(obj).forEach(key => {
+                  //console.log(obj[key].soruid + ' - ' + obj[key].sorutext)
+                    var soru = document.createElement('li');
+                    soru.classList.add("col-md-6")
+                    var cevap = document.createElement('form');
+                    cevap.classList.add("col-md-6")
+                    cevap.classList.add("row")
+                    soru.textContent = obj[key].soruid + ' - ' + obj[key].sorutext;
+                    cevap.id = "soru"+obj[key].soruid;
+                    //${obj[key].soruid}
+                    if(sectionNo != 3){
+                    cevap.innerHTML = `
+                    <div class="bg-danger p-2 mb-0 mr-1 input-block"><label class="text-light full-centered">Katılmıyorum<input type="radio" class="form-input" name="questionAnswer${obj[key].soruid}"  value="0" autocomplete="off"></label></div>
+                    <div class="bg-secondary p-2 mb-0 mr-1 input-block"><label class="text-light full-centered">Kısmen<input type="radio" class="form-input" name="questionAnswer${obj[key].soruid}" value="1" autocomplete="off"></label></div>
+                    <div class="bg-success p-2 mb-0 input-block"><label class="text-light full-centered">Katılıyorum<input type="radio" class="form-input" name="questionAnswer${obj[key].soruid}" value="2" autocomplete="off"></label></div>
+                    `
+                    }
+                    else{
+                      cevap.innerHTML = `
+                      <div class="bg-success p-2 mb-0 mr-1 input-block"><label class="text-light full-centered">Katılıyorum<input type="radio" class="form-input" name="questionAnswer${obj[key].soruid}" value="1" autocomplete="off"></label></div>
+                      <div class="bg-danger p-2 mb-0 input-block"><label class="text-light full-centered">Katılmıyorum<input type="radio" class="form-input" name="questionAnswer${obj[key].soruid}" value="0" autocomplete="off"></label></div>
+                      `
+                    }
+                    sorular.appendChild(soru)
+                    sorular.appendChild(cevap)
+                  });
+
+                  //return this.responseText;
+                }
+              }
+            }
+          }
+
+          function submit(){
+            var value;
+            try {
+              for (let index = 1; index <= 74; index++) {
+                //var idname = "soru"+index;
+                //var element = document.getElementById(idname)
+                var name = "questionAnswer"+index;
+                value = document.querySelector('input[name='+ name +']:checked').value
+                var obj = {id: index, value: value};
+                soruArr.push(obj);
+              }
+              } catch (error) {
+                console.log(error);
+                alert("Lütfen bütün soruları Doldurunuz");
+              }
+              console.log(soruArr);
+              
+              getKatsayilar();
+          }
+
+          function selectAll() {
+            for (let index = 1; index <= 74; index++) {
+                //var idname = "soru"+index;
+                //var element = document.getElementById(idname)
+                var name = "questionAnswer"+index;
+                document.querySelectorAll('input[name='+ name +']')[1].checked = true;
+                if(document.querySelectorAll('input[name='+ name +']')[2])
+                  document.querySelectorAll('input[name='+ name +']')[2].checked = true;
+            }
+          }
+          document.onreadystatechange = () => {
+            if (document.readyState === 'complete') {
+               getSorular(1)
+               getSorular(2)
+               getSorular(3)
+               getSorular(4)
+
+               setTimeout(() => {
+                selectAll();
+                getBolum();
+               }, 2000);
+            }
+          };
+          document.getElementById('syncCheck').onclick = function (){
+            var length = document.querySelectorAll('input[name="syncCheck"]:checked').length;
+            //alert(length);
+            var secilenler = [];
+            secilenler[0] = {id: document.querySelectorAll('input[name="syncCheck"]')[0].id, value: document.querySelectorAll('input[name="syncCheck"]')[0].checked}
+            secilenler[1] = {id: document.querySelectorAll('input[name="syncCheck"]')[1].id, value: document.querySelectorAll('input[name="syncCheck"]')[1].checked}
+            secilenler[2] = {id: document.querySelectorAll('input[name="syncCheck"]')[2].id, value: document.querySelectorAll('input[name="syncCheck"]')[2].checked}
+            
+            console.log(secilenler);
+            console.log(secilenler[0].id);
+            console.log(bolumler[secilenler[0].id]);
+            //getSiralama();
+            updateBasari(length);
+            
+            document.querySelector('.questions').remove();
+            document.querySelector('.sorular-title').remove();
+            getBasari();
+            secilenler[0].id = parseInt(secilenler[0].id);
+            secilenler[1].id = parseInt(secilenler[1].id);
+            secilenler[2].id = parseInt(secilenler[2].id);
+
+
+            var alan;
+            var alanSiralama;
+            if(secilenler[0].value == true){
+              if(bolumler[secilenler[0].id].alan == "SÖZ"){
+                alan = "soz";
+              }
+              else if(bolumler[secilenler[0].id].alan == "SAY"){
+                alan = "say";
+              }
+              else if(bolumler[secilenler[0].id].alan == "EA"){
+                alan = "ea";
+              }
+              
+            secilenler[0].id += 1;
+            alanSiralama = document.querySelector('input[name='+ alan +']').value
+            console.log("GÖNDERİLEN NO " + (secilenler[0].id));
+            getUniversite(secilenler[0].id, alanSiralama);
+              //getUniversite(secilenler[0].id, bolumler[secilenler[0].id-1].)
+            }
+            if(secilenler[1].value == true){
+              if(bolumler[secilenler[1].id].alan == "SÖZ"){
+                alan = "soz";
+              }
+              else if(bolumler[secilenler[1].id].alan == "SAY"){
+                alan = "say";
+              }
+              else if(bolumler[secilenler[1].id].alan == "EA"){
+                alan = "ea";
+              }
+              
+            secilenler[1].id += 1;
+            alanSiralama = document.querySelector('input[name='+ alan +']').value
+            getUniversite(secilenler[1].id, alanSiralama);
+              //getUniversite(secilenler[0].id, bolumler[secilenler[0].id-1].)
+            }
+            if(secilenler[2].value == true){
+              if(bolumler[secilenler[2].id].alan == "SÖZ"){
+                alan = "soz";
+              }
+              else if(bolumler[secilenler[2].id].alan == "SAY"){
+                alan = "say";
+              }
+              else if(bolumler[secilenler[2].id].alan == "EA"){
+                alan = "ea";
+              }
+            secilenler[2].id += 1;
+            alanSiralama = document.querySelector('input[name='+ alan +']').value
+            getUniversite(secilenler[2].id, alanSiralama);
+            }
+            console.log(alan);
+            console.log(document.querySelector('input[name='+ alan +']').value)
+          };
+        </script>
+    </body>
+</html>
