@@ -8,10 +8,10 @@ app.use(cors());
 const {Client} = require('pg');
 
 const client = new Client({
-    host: "localhost",
-    user: "postgres",
+    host: "snuffleupagus.db.elephantsql.com",
+    user: "ugejzchr",
     port: 5432,
-    password: "1234",
+    password: "6-Eki9sktGOUOBjn5GyT89KfbJC62zgP",
     database: "uzman"
 })
 
