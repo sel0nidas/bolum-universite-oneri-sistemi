@@ -116,6 +116,10 @@ function updateBasari(req, res){
     client.end;
 }
 
+app.get(('/'), function(req, res){
+    res.sendFile("./index.html");
+})
+
 app.get(('/api/sorular/:sectionid'), getSorular)
 
 app.get(('/api/universite/:bolumid/:siralama'), getUniversite)
