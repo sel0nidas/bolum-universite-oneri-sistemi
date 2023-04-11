@@ -6,7 +6,7 @@ var cors = require("cors");
 app.use(cors());
 
 const {Client} = require('pg');
-
+//password is just to a try another sql provider so do not be afraid for me :D
 const client = new Client({
     host: "snuffleupagus.db.elephantsql.com",
     user: "ugejzchr",
